@@ -1,4 +1,5 @@
-import { prime } from "./prime";
+import { prime } from "@/prime";
+
 import fs from "fs";
 
 function getc() {
@@ -11,7 +12,8 @@ function getc() {
 }
 
 function putc(char: number) {
-  process.stdout.write(Buffer.from([char]));
+  const buffer = Buffer.from([char]);
+  fs.writeSync(1, buffer);
 }
 
 let primes = prime(100);
@@ -23,21 +25,24 @@ function getp(index: number) {
   return primes[index];
 }
 
-let x = 0;
-let y = 1;
+let x = 0n;
+let y = 1n;
 const queues: number[][] = [[], [], []];
 
-export function vm(src: number) {
+export function vm(src: number | bigint) {
+  if (typeof src == "number") {
+    src = BigInt(src);
+  }
   x = src;
 
-  for (let i = 0; ; i++) {
-    const p = getp(i);
+  run: for (let i = 0; ; i++) {
+    const p = BigInt(getp(i));
 
-    if (x == 1) {
+    if (x == 1n) {
       return;
     }
 
-    while (x % p == 0) {
+    div: while (x % p == 0n) {
       x /= p;
       y *= p;
 
@@ -62,15 +67,15 @@ export function vm(src: number) {
         }
         case 4: {
           const queue = queues[0];
-          y -= queue[0] ?? 0;
+          y -= BigInt(queue[0] ?? 0);
           if (y < 0) {
-            y = 0;
+            y = 0n;
           }
           break;
         }
         case 5: {
           const queue = queues[0];
-          y += queue[0] ?? 0;
+          y += BigInt(queue[0] ?? 0);
           break;
         }
         case 6: {
@@ -78,7 +83,8 @@ export function vm(src: number) {
           if (queue.length == 0) {
             queue[0] = 0;
           }
-          queue[0] += y % 256;
+          queue[0] += Number(y % 256n);
+          queue[0] %= 256;
           break;
         }
         case 7: {
@@ -100,17 +106,18 @@ export function vm(src: number) {
         }
         case 10: {
           const queue = queues[0];
-          queue.push(y % 256);
+          queue.push(Number(y % 256n));
           break;
         }
         case 11: {
           const queue = queues[0];
           if (!queue[0]) {
             for (let j = i; ; j++) {
-              const pp = getp(j);
-              if (x % pp == 0) {
+              const pp = BigInt(getp(j));
+              if (x % pp == 0n) {
                 x /= pp;
                 y *= pp;
+                break;
               }
             }
           }
@@ -120,14 +127,17 @@ export function vm(src: number) {
           const tmp = y;
           y = x;
           x = tmp;
-          break;
+          i = -1;
+          break div;
         }
         case 13: {
-          return;
+          break run;
         }
       }
     }
   }
+
+  console.log();
 }
 
-// vm(42539);
+vm(42539);
