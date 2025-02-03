@@ -1,5 +1,5 @@
 // Origin from https://github.com/borispovod/prime
-export function prime(n: number) {
+function prime(n: number) {
   if (n < 2) {
     return [];
   }
@@ -23,4 +23,13 @@ export function prime(n: number) {
   }
 
   return pr;
+}
+
+let primes = prime(100);
+export function getp(index: number) {
+  while (index >= primes.length) {
+    primes = prime(primes[primes.length - 1] << 2);
+  }
+
+  return primes[index];
 }
