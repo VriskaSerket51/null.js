@@ -39,3 +39,36 @@ export class Compiler {
     return String(out);
   }
 }
+
+export class Decompiler {
+  static decompile(src: string, dst: string) {
+    src = fs.readFileSync(src, "utf-8");
+    const code = BigInt(src.trim());
+    const decompiler = new Decompiler();
+    const instructions = decompiler.decompile(code);
+    fs.writeFileSync(dst, instructions.map((ins) => String(ins)).join("\n"));
+  }
+
+  decompile(src: number | bigint) {
+    if (typeof src == "number") {
+      src = BigInt(src);
+    }
+
+    const instructions: number[] = [];
+
+    for (let i = 0; ; i++) {
+      const p = BigInt(getp(i));
+
+      if (src == 1n) {
+        break;
+      }
+
+      while (src % p == 0n) {
+        src /= p;
+        instructions.push(i % 14);
+      }
+    }
+
+    return instructions;
+  }
+}
