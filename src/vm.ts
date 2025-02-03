@@ -38,7 +38,7 @@ export class VM {
       const p = BigInt(getp(i));
 
       if (this.x == 1n) {
-        return;
+        break run;
       }
 
       div: while (this.x % p == 0n) {
