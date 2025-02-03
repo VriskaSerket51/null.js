@@ -45,8 +45,8 @@ export class Decompiler {
     src = fs.readFileSync(src, "utf-8");
     const code = BigInt(src.trim());
     const decompiler = new Decompiler();
-    const instructions = decompiler.decompile(code);
-    fs.writeFileSync(dst, instructions.map((ins) => String(ins)).join("\n"));
+    const { instructions, out } = decompiler.decompile(code);
+    fs.writeFileSync(dst, out);
   }
 
   decompile(src: number | bigint) {
@@ -55,6 +55,7 @@ export class Decompiler {
     }
 
     const instructions: number[] = [];
+    const primes: number[] = [];
 
     for (let i = 0; ; i++) {
       const p = BigInt(getp(i));
@@ -66,9 +67,14 @@ export class Decompiler {
       while (src % p == 0n) {
         src /= p;
         instructions.push(i % 14);
+        primes.push(Number(p));
       }
     }
 
-    return instructions;
+    const out = instructions
+      .map((ins, i) => `${String(ins).padEnd(2, " ")}\t\t// ${primes[i]}`)
+      .join("\n");
+
+    return { instructions, out };
   }
 }
