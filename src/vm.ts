@@ -2,13 +2,21 @@ import { getp } from "@/prime";
 import fs from "fs";
 
 export class VM {
+  public stdin;
+  public stdout;
+
   private x = 0n;
   private y = 1n;
   private queues: number[][] = [[], [], []];
 
+  constructor(stdin: number = 0, stdout: number = 1) {
+    this.stdin = stdin;
+    this.stdout = stdout;
+  }
+
   private getc() {
     const buffer = Buffer.alloc(1);
-    fs.readSync(0, buffer, {
+    fs.readSync(this.stdin, buffer, {
       offset: 0,
       length: 1,
     });
@@ -17,7 +25,7 @@ export class VM {
 
   private putc(char: number) {
     const buffer = Buffer.from([char]);
-    fs.writeSync(1, buffer);
+    fs.writeSync(this.stdout, buffer);
   }
 
   reset() {
